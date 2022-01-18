@@ -3,7 +3,8 @@ project(exorcists C)
 
 set(CMAKE_C_STANDARD 23)
 
-add_executable(main.c)
+add_executable(exorcists main.c utils.c utils.h)
 
 find_package(MPI REQUIRED)
-target_link_libraries(exorcists PUBLIC MPI::MPI_C)
+find_package(Threads REQUIRED)
+target_link_libraries(exorcists PUBLIC MPI::MPI_C Threads::Threads)

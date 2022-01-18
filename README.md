@@ -20,7 +20,7 @@ stored in the local warehouse. These include:
 - worn-out bed sheets from the local nursing home
 
 Secretly they start fake-haunting the selected houses. Due to the limited number of props and having in mind that the
-any two exorcists shouldn't be visiting the same house It was deemed necessary to create a mobile app for managing the
+any two exorcists shouldn'lc be visiting the same house It was deemed necessary to create a mobile app for managing the
 to-be-haunted houses.
 
 ### Original
@@ -57,10 +57,10 @@ the world, this includes the supply of props in the warehouse. Each exorcist tri
 generator, requests are sent to all other exorcists, which return:
 
 - ACK
-    - if the requesting exorcist's timestamp was higher
+    - if the requesting exorcist's timestamp was lower
     - the respondent must decrement the prop count
 - NACK
-    - if their timestamp was lower
+    - if their timestamp was higher
     - no action required
 
 We start with `m` mist generators, we'll assume `n` is the number of NACKs gathered. When gathering the responses to his
@@ -68,9 +68,20 @@ request, the exorcist must check if `m - n > 0`, If at any time he calculates th
 NACKs, but he will still meet the condition, he may proceed. If he does may grab a piece of that misty generator.
 Furthermore, he now knows at least on of both the tape recorded and the sheet are available, so he grabs them too.
 
-Finally, he may enter the house. We know that at least one house is available we can easily choose the house using
-Lamport's clock value for the request we've succeeded with: `d = c mod D`, where `c` is the clock value, `D` is the
-number of houses available and `d` is the house number (starting from `0` to `D - 1`).
+Finally, he may enter the house. Before we do that we have to make sure the house is not haunted by someone else, we
+also want to achieve an even house haunting spread, so that each house is haunted roughly equal amount of times.
+Each exorcist keeps an array of houses, each index represents a house, If the house is haunted there's 1 else 0.
+Below example demonstrates the array for 6 houses where the second and the last one are haunted.
+```
+0 1 2 3 4 5
+0 1 0 0 0 1
+```
+We randomly choose the house from the available ones. We send REQ with the house number to all the exorcists, we have to
+receive all ACK's in order to make the reservation for the house, If we receive a NACK, we update the list and proceed
+with a new free random house number. When we exit the house, we broadcast RELEASE with the house number. Everyone should
+then update their lists. If we're receiving the REQ we should update our list with 1 on the REQ's house number (unless
+we're also fighting for the access to that house). If we receive REQ on the house before processing the broadcasted
+RELEASE, well... we might have to try our luck with another house, no big deal.
 
 As to the fate of those who were not as fortunate. They must wait for the signal from one of the exorcists currently
 haunting the houses. They do not need to resend all the requests, they are already "queued" in line. The important bit
@@ -78,7 +89,7 @@ here is that they can (and should If need be) decrement the prop count below zer
 leaves the haunted house (depositing the props at the warehouse) and sends an ACK to them, they should increment their
 prop count. If the prop count climbs above zero, they're ready to go, no further checks required.
 
-The exorcists haunting may not claim anything in advance, since we don't know how long will It take them to haunt the
+The exorcists haunting may not claim anything in advance, since we don'lc know how long will It take them to haunt the
 house. They will return ACK and NACK adhering to the same rules of Lamport's clock comparison to their succeeded request
 as long as they are haunting the house, they will decrement their prop count each time (unless these are the pending
 responses they awaited before entering), they will also increment their prop count in response to ACK from someone who

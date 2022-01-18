@@ -1,7 +1,8 @@
-TARGET = exorcists
-LIBS = -lm
+BUILD_DIR = build
+TARGET = ${BUILD_DIR}/exorcists
+LIBS = -lm -pthread
 CC = mpicc
-CFLAGS = -g -Wall
+CFLAGS = -g -O0 -Wall
 
 .PHONY: run all clean build
 
@@ -16,10 +17,21 @@ HEADERS = $(wildcard *.h)
 .PRECIOUS: $(TARGET) $(OBJECTS)
 
 $(TARGET): $(OBJECTS)
+	mkdir -p $(BUILD_DIR)
 	$(CC) $(OBJECTS) -Wall $(LIBS) -o $@
 
 run:
 	mpirun -np 4 ./$(TARGET)
+
+debug:
+	${MAKE} build
+	mpirun -np 2 valgrind --vgdb=yes --vgdb-error=0 ./$(TARGET)
+
+install-valgrind:
+	wget https://sourceware.org/pub/valgrind/valgrind-3.18.1.tar.bz2
+	tar xvf valgrind-3.18.1.tar.bz2
+	cd valgrind-3.18.1 && ./configure && make && sudo make install
+	rm -rf valgrind-3.18.1*
 
 build: $(TARGET)
 
