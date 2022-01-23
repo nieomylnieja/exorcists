@@ -14,10 +14,10 @@ void handle_prop_request(int dest, msg_t req_msg) {
     if (source_takes_precedence(dest, req_msg.lc)) {
         tag = ACK;
         E_remove_tape_recorder_from_warehouse(dest);
-        snprintf(log_reason, sizeof(log_reason), "His timestamp: %d is lower than mine: %d", req_msg.lc, E.lc);
+        snprintf(log_reason, sizeof(log_reason), "His timestamp: %d is lower", req_msg.lc);
     } else {
         tag = NACK;
-        snprintf(log_reason, sizeof(log_reason), "His timestamp: %d is higher than mine: %d", req_msg.lc, E.lc);
+        snprintf(log_reason, sizeof(log_reason), "His timestamp: %d is higher", req_msg.lc);
     }
     msg_t msg = {E.lc};
     MPI_Send(&msg,
@@ -54,7 +54,7 @@ void handle_house_request(int dest, msg_t req_msg) {
     debug("I responded with %s to %d [Reason: %s]", msg_e_names[tag], dest, log_reason);
 }
 
-void handle_ack_request(int dest, msg_t) {
+void handle_ack_request(int dest, msg_t msg) {
     E.responses++;
     debug("received ACK from: %d", dest);
 }
@@ -73,7 +73,7 @@ void handle_nack_request(int dest, msg_t req_msg) {
     debug("received NACK from: %d", dest);
 }
 
-void handle_release(int dest, msg_t) {
+void handle_release(int dest, msg_t msg) {
     E_mark_house_as_being_free(dest);
     E_add_tape_recorder_to_warehouse(dest);
     debug("received RELEASE from: %d", dest);

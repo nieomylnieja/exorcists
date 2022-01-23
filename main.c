@@ -4,7 +4,6 @@
 #include "main.h"
 #include "log.h"
 #include "state.h"
-#include "message.h"
 #include "request_handlers.h"
 #include "state_handlers.h"
 #include "exorcist.h"
@@ -86,7 +85,7 @@ _Noreturn void start_main_event_loop() {
     }
 }
 
-void sig_handler(int) {
+void sig_handler(int num) {
     debug("Finishing process due to SIGINT. Running cleanup.");
     MPI_Finalize();
     sem_unlink(LOG_SEM);

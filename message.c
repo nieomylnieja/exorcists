@@ -1,8 +1,16 @@
-#include <mpi.h>
-#include <stdlib.h>
+#include <bits/types/time_t.h>
 #include <time.h>
+#include <stdlib.h>
+#include <mpi.h>
 #include "message.h"
 #include "exorcist.h"
+
+const char *msg_e_names[5] = {
+        "PROP_REQ",
+        "REQ_HOUSE",
+        "ACK",
+        "NACK",
+        "RELEASE"};
 
 void send_to_all(msg_t msg, msg_tag tag) {
     for (int i = 0; i < E.size; i++) {

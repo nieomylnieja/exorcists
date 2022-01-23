@@ -5,7 +5,6 @@
 #include <fcntl.h>
 #include <semaphore.h>
 #include "log.h"
-#include "state.h"
 #include "exorcist.h"
 
 #define LOG_LEVEL_ENV "LOG_LEVEL"
@@ -16,6 +15,13 @@ typedef enum log_level_e {
 } log_level_e;
 static const char *log_level_names[] = {"DEBUG", "INFO", "ERROR"};
 static const char *log_level_colors[] = {"\x1b[36m", "\x1b[32m", "\x1b[31m"};
+
+const char *state_e_names[] = {
+        "Gathering Props",
+        "Waiting For Free Props",
+        "Reserving House",
+        "Waiting For Free House",
+        "Haunting House",};
 
 static log_level_e log_level;
 

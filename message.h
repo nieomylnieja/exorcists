@@ -2,7 +2,7 @@
 #define EXORCISTS_MESSAGE_H
 
 // Message types.
-const char *msg_e_names[] = {"PROP_REQ", "REQ_HOUSE", "ACK", "NACK", "RELEASE"};
+const char *msg_e_names[5];
 typedef enum {
     REQ_PROP, REQ_HOUSE, ACK, NACK, RELEASE
 } msg_tag;
@@ -13,8 +13,8 @@ typedef struct msg_t {
     int house_n;     // House number.
 } msg_t;
 
-void send_house_requests();
 void send_prop_requests();
+void send_house_requests();
 void send_release();
 
 #endif //EXORCISTS_MESSAGE_H

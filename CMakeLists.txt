@@ -8,10 +8,9 @@ add_executable(exorcists
         exorcist.h
         state.h
         log.h log.c
-        message.h message.c
         request_handlers.h request_handlers.c
         state_handlers.h state_handlers.c
-        setup.c setup.h)
+        setup.c setup.h message.c message.h exorcist.c)
 
 find_package(MPI REQUIRED)
 find_package(Threads REQUIRED)

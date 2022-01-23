@@ -3,7 +3,7 @@
 #include "state_handlers.h"
 #include "exorcist.h"
 #include "log.h"
-#include "message.h"
+#include "request_handlers.h"
 
 void *start_haunting(void *arg);
 
@@ -56,7 +56,7 @@ void handle_waiting_for_free_house() {
 void handle_haunting_house() {}
 
 // The haunting thread. This has to async.
-void *start_haunting(void *) {
+void *start_haunting(void *arg) {
     int haunting_duration = 5;
     info("started haunting house for: %ds", haunting_duration);
     sleep(haunting_duration);
