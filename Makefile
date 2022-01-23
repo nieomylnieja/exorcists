@@ -4,6 +4,10 @@ LIBS = -lm -pthread
 CC = mpicc
 CFLAGS = -g -O0 -Wall
 
+ifndef NP
+	NP := 4
+endif
+
 .PHONY: run all clean build
 
 all: build run
@@ -21,11 +25,14 @@ $(TARGET): $(OBJECTS)
 	$(CC) $(OBJECTS) -Wall $(LIBS) -o $@
 
 run:
-	mpirun -np 4 ./$(TARGET)
+	mpirun -np ${NP} ./$(TARGET)
+
+run-with-config:
+	env $$(cat .env) mpirun -np ${NP} ./$(TARGET)
 
 debug:
 	${MAKE} build
-	mpirun -np 2 valgrind --vgdb=yes --vgdb-error=0 ./$(TARGET)
+	mpirun -np 2 valgrind --track-origins=yes --vgdb=yes --vgdb-error=0 ./$(TARGET)
 
 install-valgrind:
 	wget https://sourceware.org/pub/valgrind/valgrind-3.18.1.tar.bz2

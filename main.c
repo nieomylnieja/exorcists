@@ -1,111 +1,37 @@
-#include <pthread.h>
 #include <mpi.h>
-#include "utils.h"
-
-// Message types.
-const char *msg_e_names[3] = {"REQ", "ACK", "NACK"};
-typedef enum msg_e {
-    REQ, ACK, NACK
-} msg_e;
-
-// Prop types.
-const char *prop_e_names[3] = {
-        "Tape Recorder \"Kasprzak\"",
-        "Artificial Mist Generator",
-        "Used Up Sheets"};
-typedef enum prop_e {
-    TapeRecorder, MistGenerator, Sheets
-} prop_e;
-int prop_warehouse_inventory[3] = {2, 3, 4};
-
-// States an exorcists can be in.
-const char *state_e_names[3] = {
-        "Gathering Props",
-        "Reserving House",
-        "Haunting House"};
-typedef enum state_e {
-    GATHERING_PROPS, RESERVING_HOUSE, HAUNTING_HOUSE
-} state_e;
-
-// General message type.
-typedef struct msg_t {
-    int t;
-    prop_e p;
-} msg_t;
-
-int rank, size, state;
-// lc represents the Lamport clocks timestamp.
-int lc = 0;
-
-void send_prop_requests(prop_e prop);
-
-_Noreturn void *listen(void *arg);
-
-int max(int a, int b) {
-    if (a > b) {
-        return a;
-    }
-    return b;
-}
+#include <signal.h>
+#include <semaphore.h>
+#include "main.h"
+#include "log.h"
+#include "state.h"
+#include "message.h"
+#include "request_handlers.h"
+#include "state_handlers.h"
+#include "exorcist.h"
+#include "setup.h"
 
 int main(int argc, char **argv) {
+    // Signal handler
+    signal(SIGINT, sig_handler);
+
     // Initialize the MPI process.
     MPI_Init(&argc, &argv);
-    MPI_Comm_size(MPI_COMM_WORLD, &size);
-    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-    state = GATHERING_PROPS;
+    MPI_Comm_size(MPI_COMM_WORLD, &E.size);
+    MPI_Comm_rank(MPI_COMM_WORLD, &E.rank);
 
-    send_prop_requests(TapeRecorder);
+    // Initialize process state and configuration.
+    run_setup();
+    E.state = GATHERING_PROPS;
 
-    pthread_t listener;
-    pthread_create(&listener, NULL, listen, NULL);
-    pthread_join(listener, NULL);
-
-    MPI_Finalize();
+    // Start the actual program.
+    start_main_event_loop();
 }
 
-void send_prop_requests(prop_e prop) {
-    for (int i = 0; i < size; i++) {
-        if (i == rank) {
-            continue;
-        }
-        msg_t msg = {++lc, prop};
-        MPI_Send(&msg,
-                 sizeof(msg_t),
-                 MPI_BYTE,
-                 i,
-                 REQ,
-                 MPI_COMM_WORLD);
-    }
-}
-
-void handle_request(int dest, int our_t, msg_t req_msg) {
-    msg_t msg = {++lc, -1};
-    int tag;
-    if (state != GATHERING_PROPS) {
-        tag = ACK;
-    } else if (prop_warehouse_inventory[msg.p] == 0) {
-        tag = NACK;
-    } else if (our_t > req_msg.t || (our_t == req_msg.t && dest > rank)) {
-        prop_warehouse_inventory[msg.p]--; // Remove one prop from the inventory.
-        tag = ACK;
-    } else {
-        tag = NACK;
-    }
-    MPI_Send(&msg,
-             sizeof(msg_t),
-             MPI_BYTE,
-             dest,
-             tag,
-             MPI_COMM_WORLD);
-}
-
-_Noreturn void *listen(void *arg) {
-    int requests_gathered = 0;
-    int nack_count = 0;
+_Noreturn void start_main_event_loop() {
+    send_prop_requests();
     while (1) {
-        MPI_Status status;
         msg_t msg;
+        MPI_Status status;
         MPI_Recv(&msg,
                  sizeof(msg_t),
                  MPI_BYTE,
@@ -114,38 +40,55 @@ _Noreturn void *listen(void *arg) {
                  MPI_COMM_WORLD,
                  &status);
 
-        color_print(rank, "[R=%d][T=%d] I've received %s from %d\n",
-                    rank,
-                    lc,
-                    msg_e_names[status.MPI_TAG],
-                    status.MPI_SOURCE);
+        debug("I've received %s from %d", msg_e_names[status.MPI_TAG], status.MPI_SOURCE);
 
-        // Original timestamp.
-        int ot = lc;
-        // Increment Lamport clock.
-        lc = max(lc, msg.t) + 1;
-
+        // State agnostic message handling.
         switch (status.MPI_TAG) {
-            case REQ:
-                handle_request(status.MPI_SOURCE, ot, msg);
+            case REQ_PROP:
+                handle_prop_request(status.MPI_SOURCE, msg);
+                break;
+            case REQ_HOUSE:
+                handle_house_request(status.MPI_SOURCE, msg);
                 break;
             case ACK:
-                requests_gathered++;
+                handle_ack_request(status.MPI_SOURCE, msg);
                 break;
             case NACK:
-                requests_gathered++;
-                nack_count++;
+                handle_nack_request(status.MPI_SOURCE, msg);
                 break;
+            case RELEASE:
+                handle_release(status.MPI_SOURCE, msg);
+                break;
+            default:
+                error("Invalid status value. Exiting.");
         }
 
-        if (state == GATHERING_PROPS) {
-            if (requests_gathered == size) {
-                if (prop_warehouse_inventory[TapeRecorder] - nack_count > 0) {
-                    color_print(rank, "I'm good to go!");
-                } else {
-                    color_print(rank, "I'm done boss...");
-                }
-            }
+        // Specific state handlers.
+        switch (E.state) {
+            case GATHERING_PROPS:
+                handle_gathering_props();
+                break;
+            case WAITING_FOR_FREE_PROPS:
+                handle_waiting_for_free_props();
+                break;
+            case RESERVING_HOUSE:
+                handle_house_reserving();
+                break;
+            case WAITING_FOR_FREE_HOUSE:
+                handle_waiting_for_free_house();
+                break;
+            case HAUNTING_HOUSE:
+                handle_haunting_house();
+                break;
+            default:
+                error("Invalid state value. Exiting.");
         }
     }
+}
+
+void sig_handler(int) {
+    debug("Finishing process due to SIGINT. Running cleanup.");
+    MPI_Finalize();
+    sem_unlink(LOG_SEM);
+    E_cleanup();
 }
