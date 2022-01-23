@@ -28,7 +28,10 @@ int main(int argc, char **argv) {
 
 _Noreturn void start_main_event_loop() {
     send_prop_requests();
+    int loop_i = 0;
     while (1) {
+//        debug("Loop iteration: %d", loop_i);
+
         msg_t msg;
         MPI_Status status;
         MPI_Recv(&msg,
@@ -38,8 +41,6 @@ _Noreturn void start_main_event_loop() {
                  MPI_ANY_TAG,
                  MPI_COMM_WORLD,
                  &status);
-
-        debug("I've received %s from %d", msg_e_names[status.MPI_TAG], status.MPI_SOURCE);
 
         // State agnostic message handling.
         switch (status.MPI_TAG) {
@@ -62,7 +63,7 @@ _Noreturn void start_main_event_loop() {
                 error("Invalid status value. Exiting.");
         }
 
-        // Specific state handlers.
+        // State specific handlers.
         switch (E.state) {
             case GATHERING_PROPS:
                 handle_gathering_props();
@@ -82,6 +83,8 @@ _Noreturn void start_main_event_loop() {
             default:
                 error("Invalid state value. Exiting.");
         }
+
+        loop_i++;
     }
 }
 

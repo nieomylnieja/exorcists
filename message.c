@@ -1,5 +1,3 @@
-#include <bits/types/time_t.h>
-#include <time.h>
 #include <stdlib.h>
 #include <mpi.h>
 #include "message.h"
@@ -33,15 +31,12 @@ void send_prop_requests() {
 
 const int HOUSE_NO_AVAILABLE = -1;
 int pick_random_available_house() {
-    time_t raw_time;
-    time(&raw_time);
-    srand(E.rank + raw_time);
     int house_i;
     while (1) {
         house_i = rand() % E.houses_total;
         // Check if the house was already taken.
         for (int rank = 0; rank < E.size; rank++) {
-            if (E.resources[rank].house_n == house_i) {
+            if (E.resources_state[rank].house_n == house_i) {
                 house_i = HOUSE_NO_AVAILABLE;
                 break;
             }

@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <fcntl.h>
 #include <semaphore.h>
+#include <unistd.h>
 #include "log.h"
 #include "exorcist.h"
 
@@ -31,11 +32,13 @@ void log_f(log_level_e level, char *format, va_list args) {
     if (log_level > level) {
         return;
     }
+    usleep(1000); // Let the terminal process the logs correctly.
     if (sem_log != NULL) sem_wait(sem_log);
     printf("%s", log_level_colors[level]);
     printf("[T=%d][R=%d] %s ", E.lc, E.rank, log_level_names[level]);
     vprintf(format, args);
-    printf(" [State: %s]\n", state_e_names[E.state]);
+    printf(" {State: %s, Houses: %d, Props: %d, Responses: %d}\n",
+           state_e_names[E.state], E.houses_available, E.mist_generators_available, E.responses);
     printf("\033[0m");
     if (sem_log != NULL) sem_post(sem_log);
 }
