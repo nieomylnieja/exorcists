@@ -39,7 +39,9 @@ void handle_house_request(int dest, msg_t req_msg) {
             tag = ACK;
             E_mark_house_ss_being_haunted(dest, req_msg.house_n);
         } else {
-            snprintf(log_reason, sizeof(log_reason), "His timestamp: %d is higher", req_msg.lc);
+            snprintf(log_reason, sizeof(log_reason),
+                     "His timestamp: %d is higher or I'm haunting this house",
+                     req_msg.lc);
             tag = NACK;
         }
     } else {

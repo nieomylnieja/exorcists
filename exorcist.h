@@ -6,7 +6,7 @@
 typedef struct {
     int house_n;
     int mist_generator;
-} rank_resources;
+} resource_t;
 
 struct exorcist {
     // MPI rank which denotes the exorcist unique id and size = number of all exorcists.
@@ -33,7 +33,7 @@ struct exorcist {
     // For houses it's the house number being haunted, -1 if none is;
     // For mist generators It's simply a boolean, whether we already
     // received a NACK or gave an ACK for that resource to the specific rank.
-    rank_resources *resources_state;
+    resource_t *resources_state;
 } E;
 
 void E_remove_mist_generator_from_warehouse(int taker);

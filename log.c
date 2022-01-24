@@ -2,9 +2,6 @@
 #include <stdarg.h>
 #include <strings.h>
 #include <stdlib.h>
-#include <fcntl.h>
-#include <semaphore.h>
-#include <unistd.h>
 #include "log.h"
 #include "exorcist.h"
 
@@ -26,21 +23,18 @@ const char *state_e_names[] = {
 
 static log_level_e log_level;
 
-sem_t *sem_log;
-
 void log_f(log_level_e level, char *format, va_list args) {
     if (log_level > level) {
         return;
     }
-    usleep(1000); // Let the terminal process the logs correctly.
-    if (sem_log != NULL) sem_wait(sem_log);
-    printf("%s", log_level_colors[level]);
-    printf("[T=%d][R=%d] %s ", E.lc, E.rank, log_level_names[level]);
-    vprintf(format, args);
-    printf(" {State: %s, Houses: %d, Props: %d, Responses: %d}\n",
-           state_e_names[E.state], E.houses_available, E.mist_generators_available, E.responses);
-    printf("\033[0m");
-    if (sem_log != NULL) sem_post(sem_log);
+    char prefix[128];
+    char message[256];
+    char suffix[128];
+    sprintf(prefix, "%s[T=%d][R=%d] %s ", log_level_colors[level], E.lc, E.rank, log_level_names[level]);
+    sprintf(" {State: %s, Houses: %d, Props: %d, Responses: %d}\n\033[0m",
+            state_e_names[E.state], E.houses_available, E.mist_generators_available, E.responses);
+    vsprintf(message, format, args);
+    printf("%s%s%s", prefix, message, suffix);
 }
 
 void info(char *format, ...) {
@@ -75,11 +69,4 @@ void set_log_level() {
     }
     log_level = ERROR;
     error("failed to set the log level, invalid log level");
-}
-
-void setup_blocking_logging() {
-    sem_log = sem_open(LOG_SEM, O_CREAT, 0660, 1);
-    if (sem_log == SEM_FAILED) {
-        error("failed to open semaphore for blocking logging");
-    }
 }

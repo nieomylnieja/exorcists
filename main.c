@@ -30,7 +30,6 @@ _Noreturn void start_main_event_loop() {
     send_prop_requests();
     int loop_i = 0;
     while (1) {
-//        debug("Loop iteration: %d", loop_i);
 
         msg_t msg;
         MPI_Status status;

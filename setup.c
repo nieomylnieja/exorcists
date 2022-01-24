@@ -91,7 +91,6 @@ void seed_random() {
 void run_setup() {
     seed_random();
     set_log_level();
-    setup_blocking_logging();
     read_envs_and_set_defaults();
     verify_algorithm_constraints();
 }
