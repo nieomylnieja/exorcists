@@ -36,11 +36,14 @@ For debugging check out the `make debug` target, which will run `valgrind` for y
 ### Description [Polish]
 
 ```text
-Grupka egzorcystów, sfrustrowana brakiem duchów, postanawia nieco sobie dopomóc w interesie i przy pomocy urządzeń z
-magazynu (do wytwarzania sztucznej mgły, magnetofonów marki Kasprzak oraz zużytych prześcieradeł z domu opieki
-społecznej) pokryjomu urządza "nawiedzenia" wybranych domów. Z uwagi na ograniczoną liczbę rekwizytów oraz z uwagi na fakt, że
-równocześnie nie powinni egzorcyści nawiedzać tych samych domów, konieczne okazało się zaimplementowanie mobilnej
-aplikacji szeregującej nawiedzanie duchów.
+Grupka egzorcystów, sfrustrowana brakiem duchów,
+postanawia nieco sobie dopomóc w interesie i przy pomocy urządzeń z
+magazynu (do wytwarzania sztucznej mgły, magnetofonów marki Kasprzak
+oraz zużytych prześcieradeł z domu opieki społecznej) pokryjomu
+urządza "nawiedzenia" wybranych domów. Z uwagi na ograniczoną liczbę
+rekwizytów oraz z uwagi na fakt, że równocześnie nie powinni egzorcyści 
+nawiedzać tych samych domów, konieczne okazało się zaimplementowanie
+mobilnej aplikacji szeregującej nawiedzanie duchów.
 ```
 
 ### English translation
