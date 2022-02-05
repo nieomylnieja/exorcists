@@ -34,7 +34,7 @@ run:
 	mpirun -np ${NP} ./$(TARGET)
 
 run-with-config:
-	env $$(cat ${LOCAL_ENV}) | mpirun -np $$(awk -F= '/^NP/ {print $$2}' ${LOCAL_ENV}) ./$(TARGET)
+	env $$(cat ${LOCAL_ENV}) mpirun -np $$(awk -F= '/^NP/ {print $$2}' ${LOCAL_ENV}) ./$(TARGET)
 
 debug:
 	${MAKE} build
