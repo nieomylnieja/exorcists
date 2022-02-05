@@ -31,7 +31,7 @@ void log_f(log_level_e level, char *format, va_list args) {
     char message[256];
     char suffix[128];
     sprintf(prefix, "%s[T=%d][R=%d] %s ", log_level_colors[level], E.lc, E.rank, log_level_names[level]);
-    sprintf(" {State: %s, Houses: %d, Props: %d, Responses: %d}\n\033[0m",
+    sprintf(suffix, " {State: %s, Houses: %d, Props: %d, Responses: %d}\n\033[0m",
             state_e_names[E.state], E.houses_available, E.mist_generators_available, E.responses);
     vsprintf(message, format, args);
     printf("%s%s%s", prefix, message, suffix);
