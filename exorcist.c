@@ -37,8 +37,8 @@ void E_mark_house_as_being_free(int releaser) {
 }
 
 void E_setup_resources_state() {
-    E.resources_state = (resource_t *) malloc(E.houses_total * sizeof(resource_t));
-    for (int i = 0; i < E.houses_total; i++) {
+    E.resources_state = (resource_t *) malloc(E.size * sizeof(resource_t));
+    for (int i = 0; i < E.size; i++) {
         resource_t res = {-1, 0};
         E.resources_state[i] = res;
     }
