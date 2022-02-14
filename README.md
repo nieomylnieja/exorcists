@@ -4,7 +4,7 @@ Project for Distributed Programming course at Poznan University of Technology.
 
 ## The program
 
-Make sure you have the `MPI` libs installed, `mpicc` for building and for `mpirun` running . You can either use the
+Make sure you have the `MPI` libs installed, `mpicc` for building and `mpirun` for running . You can either use the
 provided `Makefile` or `cmake` for your convenience.
 
 ### Running
